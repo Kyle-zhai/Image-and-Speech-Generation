@@ -1,0 +1,9 @@
+llms:
+  basic:
+    provider: gemini
+    model: gemini-1.5-flash
+    api_key: "AIzaSyB5zyS4cF28TR-AA40fWS_3aF7E3OJ1np0" 
+
+tools:
+  image_generator: imagen-3
+  speech_generator: gemini-tts

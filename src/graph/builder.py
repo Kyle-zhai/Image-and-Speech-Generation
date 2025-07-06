@@ -4,6 +4,8 @@
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
 from src.prompts.planner_model import StepType
+from src.agents.image_agent import image_agent_node
+from src.agents.speech_agent import speech_agent_node
 
 from .types import State
 from .nodes import (
@@ -47,6 +49,8 @@ def _build_base_graph():
     builder.add_node("coder", coder_node)
     builder.add_node("human_feedback", human_feedback_node)
     builder.add_edge("background_investigator", "planner")
+    builder.add_node("image_generator", image_agent_node)
+    builder.add_node("speech_generator", speech_agent_node)
     builder.add_conditional_edges(
         "research_team",
         continue_to_running_research_team,

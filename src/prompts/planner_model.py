@@ -53,6 +53,32 @@ class Plan(BaseModel):
                             "step_type": "research",
                         }
                     ],
+                },
+                {
+                    "has_enough_context": True,
+                    "thought": "The user wants an image of a robot dog.",
+                    "title": "Generate Robot Dog Image",
+                    "steps": [
+                        {
+                            "need_search": False,
+                            "title": "Render robot dog",
+                            "description": "Use Imagen-3 to generate an image of a futuristic robot dog with glowing eyes.",
+                            "step_type": "image_generation"
+                        }
+                    ]
+                },
+                {
+                    "has_enough_context": True,
+                    "thought": "The user wants to hear a welcome message aloud.",
+                    "title": "Synthesize Welcome Speech",
+                    "steps": [
+                        {
+                            "need_search": False,
+                            "title": "Generate speech audio",
+                            "description": "Use Gemini TTS to speak 'Welcome to DeerFlow!' in a natural voice.",
+                            "step_type": "speech_synthesis"
+                        }
+                    ]
                 }
             ]
         }
