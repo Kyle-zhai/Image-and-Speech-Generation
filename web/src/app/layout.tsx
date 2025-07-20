@@ -4,53 +4,48 @@
 import "~/styles/globals.css";
 
 import { type Metadata } from "next";
-import { Geist } from "next/font/google";
 import Script from "next/script";
 
-import { ThemeProviderWrapper } from "~/components/deer-flow/theme-provider-wrapper";
+import { ThemeProvider } from "../components/theme-provider";
+import { Toaster } from "../components/toaster";
 import { env } from "~/env";
 
-import { Toaster } from "../components/deer-flow/toaster";
+// ⬇ 新增
+import { ConfigProvider } from "../hooks/useConfig";
 
 export const metadata: Metadata = {
   title: "🦌 DeerFlow",
-  description:
-    "Deep Exploration and Efficient Research, an AI tool that combines language models with specialized tools for research tasks.",
+  description: "Deep Exploration and Efficient Research...",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-const geist = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist-sans",
-});
-
-export default async function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geist.variable}`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Define isSpace function globally to fix markdown-it issues with Next.js + Turbopack
-          https://github.com/markdown-it/markdown-it/issues/1082#issuecomment-2749656365 */}
         <Script id="markdown-it-fix" strategy="beforeInteractive">
-          {`
-            if (typeof window !== 'undefined' && typeof window.isSpace === 'undefined') {
+          {`if (typeof window !== 'undefined' && typeof window.isSpace === 'undefined') {
               window.isSpace = function(code) {
                 return code === 0x20 || code === 0x09 || code === 0x0A || code === 0x0B || code === 0x0C || code === 0x0D;
               };
-            }
-          `}
+            }`}
         </Script>
       </head>
       <body className="bg-app">
-        <ThemeProviderWrapper>{children}</ThemeProviderWrapper>
-        <Toaster />
-        {
-          // NO USER BEHAVIOR TRACKING OR PRIVATE DATA COLLECTION BY DEFAULT
-          //
-          // When `NEXT_PUBLIC_STATIC_WEBSITE_ONLY` is `true`, the script will be injected
-          // into the page only when `AMPLITUDE_API_KEY` is provided in `.env`
-        }
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {/* ⬇ 将整个 app 包在 ConfigProvider 里 */}
+          <ConfigProvider>
+            {children}
+            <Toaster />
+          </ConfigProvider>
+        </ThemeProvider>
+
+        {/* analytics block 保留原样 */}
         {env.NEXT_PUBLIC_STATIC_WEBSITE_ONLY && env.AMPLITUDE_API_KEY && (
           <>
             <Script src="https://cdn.amplitude.com/script/d2197dd1df3f2959f26295bb0e7e849f.js"></Script>

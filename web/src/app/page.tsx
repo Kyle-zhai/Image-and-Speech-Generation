@@ -1,8 +1,7 @@
-// Copyright (c) 2025 Bytedance Ltd. and/or its affiliates
-// SPDX-License-Identifier: MIT
+"use client"
+import React, { useMemo } from "react";
 
-import { useMemo } from "react";
-
+// ---- Landing / existing site sections ----
 import { SiteHeader } from "./chat/components/site-header";
 import { Jumbotron } from "./landing/components/jumbotron";
 import { Ray } from "./landing/components/ray";
@@ -11,23 +10,66 @@ import { CoreFeatureSection } from "./landing/sections/core-features-section";
 import { JoinCommunitySection } from "./landing/sections/join-community-section";
 import { MultiAgentSection } from "./landing/sections/multi-agent-section";
 
+// ---- Runtime config (planner/image/speech enable flags) ----
+import { useConfig } from "../hooks/useConfig";
+
+// ---- Live agent SSE panel (streams image/audio/video/text events) ----
+import LiveAgentSSEPanel from "../components/live-agent-sse-panel";
+
+/* -------------------------------------------------------------------------------------------------
+ * Page Component
+ * -----------------------------------------------------------------------------------------------*/
 export default function HomePage() {
+  const { config, loading, error } = useConfig();
+
   return (
     <div className="flex flex-col items-center">
       <SiteHeader />
+
       <main className="container flex flex-col items-center justify-center gap-56">
+        {/* Static landing sections (marketing) */}
         <Jumbotron />
         <CaseStudySection />
         <MultiAgentSection />
         <CoreFeatureSection />
         <JoinCommunitySection />
+
+        {/* Live streaming agent output */}
+        <section id="live-agent" className="w-full mt-20 space-y-4">
+          <h2 className="text-xl font-semibold tracking-tight">Live Agent Responses</h2>
+
+          {loading && (
+            <p className="text-sm text-muted-foreground">Loading configuration…</p>
+          )}
+
+          {!loading && (
+            <>
+              {error && (
+                <WarningBanner message="Failed to load config. Using defaults." />
+              )}
+              {!config.imageEnabled && (
+                <WarningBanner message="Image generation disabled in config." />
+              )}
+              {!config.speechEnabled && (
+                <WarningBanner message="Speech generation disabled in config." />
+              )}
+
+              {/* SSE panel actually renders streamed responses */}
+              <LiveAgentSSEPanel endpoint="/api/sse" enabled />
+            </>
+          )}
+        </section>
       </main>
+
       <Footer />
       <Ray />
     </div>
   );
 }
 
+/* -------------------------------------------------------------------------------------------------
+ * Footer
+ * -----------------------------------------------------------------------------------------------*/
 function Footer() {
   const year = useMemo(() => new Date().getFullYear(), []);
   return (
@@ -43,5 +85,16 @@ function Footer() {
         <p>&copy; {year} DeerFlow</p>
       </div>
     </footer>
+  );
+}
+
+/* -------------------------------------------------------------------------------------------------
+ * Small in-page warning banner (config flags / errors)
+ * -----------------------------------------------------------------------------------------------*/
+function WarningBanner({ message }: { message: string }) {
+  return (
+    <div className="w-full rounded-md border border-yellow-400/40 bg-yellow-400/10 px-4 py-2 text-sm text-yellow-700 dark:text-yellow-300">
+      {message}
+    </div>
   );
 }

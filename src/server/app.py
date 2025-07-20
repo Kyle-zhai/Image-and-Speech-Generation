@@ -7,6 +7,8 @@ import logging
 import os
 from typing import Annotated, List, cast
 from uuid import uuid4
+from pydantic import BaseModel 
+from fastapi import Query, Request
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,6 +16,7 @@ from fastapi.responses import Response, StreamingResponse
 from langchain_core.messages import AIMessageChunk, ToolMessage, BaseMessage
 from langgraph.types import Command
 
+from src.server.chat_request import ChatRequest
 from src.config.report_style import ReportStyle
 from src.config.tools import SELECTED_RAG_PROVIDER
 from src.graph.builder import build_graph_with_memory
@@ -63,6 +66,9 @@ app.add_middleware(
 
 graph = build_graph_with_memory()
 
+class SSEQuery(BaseModel):
+    """前端 GET /api/sse 时使用的查询参数模型。如需扩展可在此加字段"""
+    prompt: str = "Hello, DeerFlow!"
 
 @app.post("/api/chat/stream")
 async def chat_stream(request: ChatRequest):
@@ -414,3 +420,11 @@ async def config():
         rag=RAGConfigResponse(provider=SELECTED_RAG_PROVIDER),
         models=get_configured_llm_models(),
     )
+
+@app.get("/api/sse")
+async def sse(prompt: str):
+    # 1) 构造 ChatRequest（只放最小字段就行）
+    req = ChatRequest(messages=[{"role": "user", "content": prompt}])
+
+    # 2) 等待 chat_stream 得到 StreamingResponse
+    return await chat_stream(req)
